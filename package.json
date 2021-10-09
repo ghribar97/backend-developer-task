@@ -1,0 +1,22 @@
+{
+  "name": "backend-developer-task",
+  "version": "1.0.0",
+  "description": "Create REST API that allows users to manage their notes.  \r Notes can be organized into folders for easier management.  \r API should allow user authentication through basic HTTP authentication (username and password).  \r The goal is to build a simple but secure and easily scalable service.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ghribar97/backend-developer-task.git"
+  },
+  "author": "ghribar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ghribar97/backend-developer-task/issues"
+  },
+  "homepage": "https://github.com/ghribar97/backend-developer-task#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
