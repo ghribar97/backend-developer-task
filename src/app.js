@@ -1,7 +1,8 @@
 const express = require('express');
+const config = require("./config/config");
 
 const app = express();
-const port = 8080;
+const port = config.app.port;
 
 app.get('/', function (req, res) {
     res.send('GET request to homepage')

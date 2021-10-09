@@ -1,6 +1,6 @@
 FROM node:14
 
-WORKDIR /usr/src/app
+WORKDIR /src
 
 # Install app dependencies
 COPY package*.json ./
@@ -11,4 +11,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 8080
-CMD [ "node", "server.js" ]
+CMD [ "node", "src/app.js" ]
