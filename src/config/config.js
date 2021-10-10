@@ -1,10 +1,25 @@
-var config = {};
-config.app = {};
-config.db = {};
+require('dotenv').config();
 
-// applicaton
-config.app.port = process.env.PORT || 8080;
-
-//database
-
-module.exports = config;
+module.exports = {
+"development": {
+    "username": process.env.DATABASE_USERNAME,
+    "password": process.env.DATABASE_PASSWORD,
+    "database": process.env.DATABASE_NAME,
+    "host": process.env.DATABASE_HOST,
+    "dialect": "postgres"
+},
+"test": {
+    "username": process.env.DATABASE_USERNAME,
+    "password": process.env.DATABASE_PASSWORD,
+    "database": process.env.DATABASE_NAME,
+    "host": process.env.DATABASE_HOST,
+    "dialect": "postgres"
+},
+"production": {
+    "username": process.env.DATABASE_USERNAME,
+    "password": process.env.DATABASE_PASSWORD,
+    "database": process.env.DATABASE_NAME,
+    "host": process.env.DATABASE_HOST,
+    "dialect": "postgres"
+}
+};

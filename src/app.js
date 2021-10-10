@@ -1,14 +1,14 @@
 const express = require('express');
-const config = require("./config/config");
+const logger = require('morgan');
 
 const app = express();
-const port = config.app.port;
+const port = process.env.PORT;
 
-app.get('/', function (req, res) {
-    res.send('GET request to homepage')
-  })
-
+// Log requests to the console.
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.listen(port, () => {
-    console.log(`Now listening on port ${port}`);
+      console.log(`Now listening on port ${port}`);
 });
