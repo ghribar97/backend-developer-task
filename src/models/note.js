@@ -1,3 +1,5 @@
+const Sequelize = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   const Note = sequelize.define('Note', {
     name: {
@@ -12,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       type: Sequelize.ENUM('TEXT', 'LIST'),
       allowNull: false,
     },
-    accessPolicy: {
+    access_policy: {
       type: Sequelize.ENUM('PRIVATE', 'PUBLIC'),
       allowNull: false,
     },
@@ -28,6 +30,8 @@ module.exports = (sequelize, DataTypes) => {
       as: 'noteContent'
     });
   };
+
+  Note.tableName = 'notes';
 
   return Note;
 };

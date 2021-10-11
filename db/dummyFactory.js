@@ -1,13 +1,13 @@
-var faker = require('faker');
+const faker = require('faker');
+const bcrypt = require('bcrypt');
 
-function createDummyUser() {
+async function createDummyUser() {
     return {
         name: faker.name.findName(),
         username: faker.internet.userName(),
-        password: faker.internet.password()
+        password: await bcrypt.hash('12345', parseInt(process.env.CRYPTO_SALT_ROUNDS)) // same password for testing purposes
     }
 }
-
 
 function createDummyFolder(ownerId) {
     return {

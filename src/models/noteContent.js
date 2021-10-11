@@ -13,5 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  NoteContent.tableName = 'note_contents';
+
   return NoteContent;
 };

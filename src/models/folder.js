@@ -17,5 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  Folder.tableName = 'folders';
+
   return Folder;
 };

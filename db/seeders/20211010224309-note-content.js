@@ -3,7 +3,7 @@ var factory = require('../dummyFactory')
 module.exports = {
   up: async (queryInterface, Sequelize) => {
 
-     await queryInterface.bulkInsert('note_content', [
+     await queryInterface.bulkInsert('note_contents', [
        factory.createDummyNoteContent(1),
 
        factory.createDummyNoteContent(2),
@@ -14,6 +14,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('note_content', null, {});
+    await queryInterface.bulkDelete('note_contents', null, {});
   }
 };

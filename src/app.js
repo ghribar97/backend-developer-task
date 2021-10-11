@@ -1,20 +1,51 @@
 const express = require('express');
 const config = require("./config/config");
-const folders = require("./api/folders");
-const notes = require("./api/notes");
+const folders = require("./routes/folders");
+const notes = require("./routes/notes");
+const auth = require("./routes/auth");
 const logger = require('morgan');
+const cors = require("cors");
+const db = require("./models");
+const handlers = require("./errors/handlers")
+const cookieParser = require("cookie-parser");
+const sessions = require('express-session');
 
+//db.sequelize.sync();
 const app = express();
-
-app.use('/folders', folders);
-app.use("/notes", notes);
-
-const port = process.env.PORT;
 
 // Log requests to the console.
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+var corsOptions = {
+  origin: "http://localhost:8081"
+};
+
+app.use(cors(corsOptions));
+
+app.use(sessions({
+    secret: process.env.SESSION_SECRET || 'my_secret',
+    saveUninitialized: false,
+    cookie: { 
+      maxAge: 1000 * 60 * 60  // one hour
+     },
+    resave: false 
+}));
+
+// cookie parser middleware
+app.use(cookieParser());
+
+// routes
+app.use('/folders', folders);
+app.use("/notes", notes);
+app.use("/auth", auth);
+
+// Error handlers
+app.use(handlers.celebrateErrorHandling);
+app.use(handlers.commonErrorHandling);
+
+const port = process.env.PORT;
 
 app.listen(port, () => {
       console.log(`Now listening on port ${port}`);
