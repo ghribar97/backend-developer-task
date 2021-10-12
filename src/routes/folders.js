@@ -1,22 +1,59 @@
 var express = require('express');
+const { celebrate, Joi, Segments } = require('celebrate');
+const { getAllOwned, getOwnedById, create, update, remove } = require('../controllers/folderController');
+const { authenticate } = require('../controllers/authController');
+
 var router = express.Router();
+router.use(authenticate);
 
-const basePath = "";
+const folderIdValidation = {
+    [Segments.PARAMS]: Joi.object().keys({
+      id: Joi.number().required()
+    })
+  };
 
-router.get(basePath, function (req, res) {
-    res.send(`GET ${basePath}`);
-});
+const folderBodyValidation = {
+    [Segments.BODY]: Joi.object().keys({
+        name: Joi.string().required()
+    })
+};
 
-router.post(basePath, function (req, res) {
-    res.send(`POST ${basePath}`);
-});
+router.get(
+    "/",
+    getAllOwned
+);
 
-router.put(basePath, function (req, res) {
-    res.send(`PUT ${basePath}`);
-});
+router.get(
+    "/:id",
+    celebrate({
+        ...folderIdValidation
+    }),
+    getOwnedById
+);
 
-router.delete(basePath, function (req, res) {
-    res.send(`DELETE ${basePath}`);
-});
+router.post(
+    "/",
+    celebrate({
+        ...folderBodyValidation
+      }),
+    create
+);
+
+router.put(
+    "/:id",
+    celebrate({
+        ...folderIdValidation,
+        ...folderBodyValidation
+      }),
+    update
+);
+
+router.delete(
+    "/:id",
+    celebrate({
+        ...folderIdValidation
+    }),
+    remove
+);
 
 module.exports = router;

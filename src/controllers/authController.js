@@ -1,10 +1,9 @@
 const db = require("../models");
 const bcrypt = require('bcrypt')
-const { InvalidCredentialsApiError } = require("../errors/apiErrror")
+const { InvalidCredentialsApiError, UnauthorizedApiError } = require("../errors/apiErrror")
 
 exports.login = async (req, res, next) => {
-    const username = req.body.username;
-    const password = req.body.password;
+    const { username, password } = req.body;
 
     const dbUser = await db.User.findOne({ where: { username: username } })
 
@@ -25,13 +24,22 @@ exports.login = async (req, res, next) => {
     };
 
     res.status(200).json({ 
-        "message": "Login successful"
+        "message": "Login successful!"
     });
 };
 
 exports.logout = async (req, res, next) => {
     req.session.destroy();
     res.status(200).json({ 
-        "message": "Logout successful"
+        "message": "Logout successful!"
     });
 };
+
+exports.authenticate = async (req, res, next) => {
+    const user = req.session.user;
+
+    if (!user) {
+        return next(new UnauthorizedApiError);
+    }
+    next();
+}

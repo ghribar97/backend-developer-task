@@ -4,10 +4,10 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
 
      await queryInterface.bulkInsert('notes', [
-       factory.createDummyNote(1, 'TEXT'),
+       factory.createDummyNote(2, 1, 'TEXT'),
 
-       factory.createDummyNote(2, 'TEXT'),
-       factory.createDummyNote(2, 'LIST')
+       factory.createDummyNote(3, 2, 'TEXT'),
+       factory.createDummyNote(3, 2, 'LIST')
      ], {});
   },
 

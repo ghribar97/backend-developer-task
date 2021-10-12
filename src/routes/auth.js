@@ -1,6 +1,6 @@
 var express = require('express');
 const { celebrate, Joi, Segments } = require('celebrate');
-const authController = require('../controllers/authController');
+const { login, logout } = require('../controllers/authController');
 
 var router = express.Router();
 
@@ -12,12 +12,12 @@ router.post(
             password: Joi.string().required()
         })
     }),
-    authController.login
+    login
 );
 
 router.get(
     "/logout",
-    authController.logout
+    logout
 );
 
 module.exports = router;

@@ -25,9 +25,13 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'folder_id',
       onDelete: 'CASCADE',
     });
+    Note.belongsTo(models.User, {
+      foreignKey: 'owner_id',
+      onDelete: 'CASCADE',
+    });
     Note.hasMany(models.NoteContent, {
       foreignKey: 'note_id',
-      as: 'noteContent'
+      as: 'note_contents'
     });
   };
 

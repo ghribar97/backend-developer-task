@@ -17,12 +17,13 @@ function createDummyFolder(ownerId) {
 }
 
 
-function createDummyNote(folderId, type) {
+function createDummyNote(ownerId, folderId, type) {
     return {
         name: faker.system.fileName(),
         heading: faker.lorem.words(3),
         access_policy: faker.random.arrayElement(['PRIVATE', 'PUBLIC']),
         folder_id: folderId,
+        owner_id: ownerId,
         type: type
     }
 }

@@ -31,6 +31,15 @@ module.exports = {
           key: 'id',
           as: 'folder_id',
         },
+      },
+      owner_id: {
+        type: Sequelize.INTEGER,
+        onDelete: 'CASCADE',
+        references: {
+          model: 'users',
+          key: 'id',
+          as: 'owner_id',
+        },
       }
     });
   },

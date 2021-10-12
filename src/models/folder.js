@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Folder.associate = (models) => {
     Folder.belongsTo(models.User, {
-      foreignKey: 'user_id',
+      foreignKey: 'owner_id',
       onDelete: 'CASCADE'
     });
     Folder.hasMany(models.Note, {

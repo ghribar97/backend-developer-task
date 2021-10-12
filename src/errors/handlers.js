@@ -3,9 +3,20 @@ const { CommonError } = require('./commonError');
 
 function celebrateErrorHandling(err, req, res, next) {
     if (isCelebrate(err)) {
+        var errorString = "";
+        if (err.details.get("body")) {
+            const errorBody = err.details.get('body');
+            const { details } = errorBody;
+            errorString = details[0].message;
+        }
+        else if(err.details.get("params")) {
+            const errorBody = err.details.get("params");
+            const { details } = errorBody;
+            errorString = details[0].message;
+        }
         return res.send({
             statusCode: 400,
-            message: err.joi.message
+            message: errorString
         });
     }
     

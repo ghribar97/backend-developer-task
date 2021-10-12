@@ -23,8 +23,12 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = (models) => {
     User.hasMany(models.Folder, {
-      foreignKey: 'folder_id',
+      foreignKey: 'owner_id',
       as: 'folders'
+    });
+    User.hasMany(models.Note, {
+      foreignKey: 'owner_id',
+      as: 'notes'
     });
   };
   
