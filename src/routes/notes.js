@@ -2,6 +2,7 @@ var express = require('express');
 const { celebrate, Joi, Segments } = require('celebrate');
 const { getAllAccessible, getAccessibleById, create, update, remove } = require('../controllers/notesController');
 const { authenticate } = require('../controllers/authController');
+const { AccessPolicy, NoteType } = require('../types');
 
 var router = express.Router();
 
@@ -35,10 +36,10 @@ router.post(
             name: Joi.string().required(),
             folder_id: Joi.number().required(),
             heading: Joi.string().required(),
-            type: Joi.string().valid("TEXT", "LIST").required(),
-            access_policy: Joi.string().valid("PRIVATE", "PUBLIC").required(),
-            note_contents: Joi.when('type', {
-                is: Joi.string().valid('TEXT'),
+            type: Joi.string().valid(NoteType.TEXT, NoteType.LIST).required(),
+            access_policy: Joi.string().valid(AccessPolicy.PRIVATE, AccessPolicy.PUBLIC).required(),
+            note_content: Joi.when('type', {
+                is: Joi.string().valid(NoteType.TEXT),
                 then: Joi.string().required(),
                 otherwise: Joi.array().items(Joi.string().required())
             }).required()
@@ -55,13 +56,8 @@ router.put(
             name: Joi.string().required(),
             folder_id: Joi.number().required(),
             heading: Joi.string().required(),
-            type: Joi.string().valid("TEXT", "LIST").required(),
-            access_policy: Joi.string().valid("PRIVATE", "PUBLIC").required(),
-            note_contents: Joi.when('type', {
-                is: Joi.string().valid('TEXT'),
-                then: Joi.string().required(),
-                otherwise: Joi.array().items(Joi.string().required())
-            }).required()
+            access_policy: Joi.string().valid(AccessPolicy.PRIVATE, AccessPolicy.PUBLIC).required(),
+            body: Joi.string()
         })
       }),
     update

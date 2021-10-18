@@ -1,3 +1,5 @@
+const { AccessPolicy, NoteType } = require('../../src/types');
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('notes', {
@@ -12,7 +14,7 @@ module.exports = {
         allowNull: false
       },
       type: {
-        type: Sequelize.ENUM('LIST', 'TEXT'),
+        type: Sequelize.ENUM(NoteType.LIST, NoteType.TEXT),
         allowNull: false
       },
       heading: {
@@ -20,7 +22,7 @@ module.exports = {
         allowNull: false
       },
       access_policy: {
-        type: Sequelize.ENUM('PRIVATE', 'PUBLIC'),
+        type: Sequelize.ENUM(AccessPolicy.PUBLIC, AccessPolicy.PRIVATE),
         allowNull: false
       },
       folder_id: {

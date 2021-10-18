@@ -1,6 +1,6 @@
 const db = require("../models");
 const bcrypt = require('bcrypt')
-const { InvalidCredentialsApiError, UnauthorizedApiError } = require("../errors/apiErrror")
+const { InvalidCredentialsApiError, UnauthorizedApiError } = require("../handlers/apiError")
 
 exports.login = async (req, res, next) => {
     const { username, password } = req.body;
@@ -41,5 +41,6 @@ exports.authenticate = async (req, res, next) => {
     if (!user) {
         return next(new UnauthorizedApiError);
     }
+    
     next();
 }

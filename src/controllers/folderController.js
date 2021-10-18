@@ -1,15 +1,20 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const { NotFoundApiError } = require("../errors/apiErrror")
+const { NotFoundApiError } = require("../handlers/apiError")
+const { getQueryOptions } = require("../services/apiQueryService");
+const { adaptFolderToDto } = require("../services/adapterService");
 
 exports.getAllOwned = async (req, res, next) => {
     const userId = req.session.user.id;
-
-    const accessibleFolders = await db.Folder.findAll({ where: { owner_id: userId } });
+    
+    const accessibleFolders = await db.Folder.findAll({ 
+        where: { owner_id: userId },         
+        ...getQueryOptions(req.query)
+    });
 
     res.status(200).json({ 
         "message": "Successfuly retrieved folders!",
-        "data": accessibleFolders
+        "data": accessibleFolders.map(folder => adaptFolderToDto(folder))
     });
 };
 
@@ -18,6 +23,11 @@ exports.getOwnedById = async (req, res, next) => {
     const folderId = req.params.id;
 
     const accessibleFolder = await db.Folder.findOne({ 
+        include: [{
+            model: db.Note,
+            as: "notes",
+            required: false
+        }],
         where: { 
             [Op.and]: [{owner_id: userId}, {id: folderId}] 
         } 
@@ -29,7 +39,7 @@ exports.getOwnedById = async (req, res, next) => {
 
     res.status(200).json({ 
         "message": `Successfuly retrieved folder with id ${folderId}!`,
-        "data": accessibleFolder
+        "data": adaptFolderToDto(accessibleFolder)
     });
 };
 
@@ -44,7 +54,7 @@ exports.create = async (req, res, next) => {
 
     res.status(200).json({ 
         "message": `Successfuly created new folder with id ${newFolder.id}!`,
-        "data": newFolder
+        "data": adaptFolderToDto(newFolder)
     });
 };
 
@@ -68,7 +78,7 @@ exports.update = async (req, res, next) => {
 
     res.status(200).json({ 
         "message": `Successfuly updated folder with id ${existingFolder.id}!`,
-        "data": existingFolder
+        "data": adaptFolderToDto(existingFolder)
     });
 };
 
@@ -90,6 +100,6 @@ exports.remove = async (req, res, next) => {
 
     res.status(200).json({ 
         "message": `Successfuly deleted folder with id ${existingFolder.id}!`,
-        "data": existingFolder
+        "data": adaptFolderToDto(existingFolder)
     });
 };

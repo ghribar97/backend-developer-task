@@ -1,4 +1,6 @@
 const Sequelize = require('sequelize');
+const { AccessPolicy, NoteType } = require('../types');
+
 
 module.exports = (sequelize, DataTypes) => {
   const Note = sequelize.define('Note', {
@@ -11,11 +13,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     type: {
-      type: Sequelize.ENUM('TEXT', 'LIST'),
+      type: Sequelize.ENUM(NoteType.TEXT, NoteType.LIST),
       allowNull: false,
     },
     access_policy: {
-      type: Sequelize.ENUM('PRIVATE', 'PUBLIC'),
+      type: Sequelize.ENUM(AccessPolicy.PRIVATE, AccessPolicy.PUBLIC),
       allowNull: false,
     },
   });

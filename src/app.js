@@ -2,11 +2,12 @@ const express = require('express');
 const config = require("./config/config");
 const folders = require("./routes/folders");
 const notes = require("./routes/notes");
+const noteListContent = require("./routes/noteListContent");
 const auth = require("./routes/auth");
 const logger = require('morgan');
 const cors = require("cors");
 const db = require("./models");
-const handlers = require("./errors/handlers")
+const handlers = require("./handlers/handlers")
 const cookieParser = require("cookie-parser");
 const sessions = require('express-session');
 
@@ -39,6 +40,7 @@ app.use(cookieParser());
 // routes
 app.use('/folders', folders);
 app.use("/notes", notes);
+app.use("/notes", noteListContent);
 app.use("/auth", auth);
 
 // Error handlers

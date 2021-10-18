@@ -1,40 +1,35 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const { NotFoundApiError, ApiError } = require("../errors/apiErrror")
+const { NotFoundApiError, ApiError } = require("../handlers/apiError");
+const { getQueryOptions } = require("../services/apiQueryService");
+const { AccessPolicy, NoteType } = require('../types');
+const { adaptNoteToDto } = require("../services/adapterService");
+
 
 exports.getAllAccessible = async (req, res, next) => {
-    const userId = null;
+    var userId = null;
     if (req.session.user) {
-        const userId = req.session.user.id;
-    }
-
-    // type is checked in middleware
-    const limit = parseInt(req.query.limit) || 5;
-    const offset = parseInt(req.query.offset) || 0;
-    var order = req.query.order || 'heading';
-    var orderType = 'ASC';
-    if (order.startsWith('-')) {
-        orderType = 'DESC';
-        order = order.substring(1);
+        userId = req.session.user.id;
     }
 
     const accessibleNotes = await db.Note.findAll({
         where: {
-            [Op.or]: [{access_policy: 'PUBLIC'}, {owner_id: userId}] 
+            [Op.or]: [{access_policy: AccessPolicy.PUBLIC}, {owner_id: userId}] 
         },
-        order: [[ order, orderType ]],
-        limit:  limit,
-        offset: offset
+        ...getQueryOptions(req.query)
     });
 
     res.status(200).json({ 
         "message": "Successfuly retrieved notes!",
-        "data": accessibleNotes
+        "data": accessibleNotes.map(note => adaptNoteToDto(note))
     });
 };
 
 exports.getAccessibleById = async (req, res, next) => {
-    const userId = req.session.user.id;
+    var userId = null;
+    if (req.session.user) {
+        userId = req.session.user.id;
+    }
     const noteId = req.params.id;
 
     const accessibleNote = await db.Note.findOne({
@@ -44,7 +39,7 @@ exports.getAccessibleById = async (req, res, next) => {
             required: false
         }],
         where: {
-            [Op.or]: [{access_policy: 'PUBLIC'}, {owner_id: userId}],
+            [Op.or]: [{access_policy: AccessPolicy.PUBLIC}, {owner_id: userId}],
             id: noteId
        } 
    });
@@ -54,8 +49,8 @@ exports.getAccessibleById = async (req, res, next) => {
     }
 
     res.status(200).json({ 
-        "message": `Successfuly retrieved folder with id ${noteId}!`,
-        "data": accessibleNote
+        "message": `Successfuly retrieved note with id ${noteId}!`,
+        "data": adaptNoteToDto(accessibleNote)
     });
 };
 
@@ -70,40 +65,43 @@ exports.create = async (req, res, next) => {
             ...req.body
         }, {transaction: t});
     
-        const { type, note_contents } = req.body;
-        if (type === 'TEXT') {
+        const { type, note_content } = req.body;
+        if (type === NoteType.TEXT) {
             db.NoteContent.create({     
-                body: note_contents,
+                body: note_content,
                 note_id: newNote.id
             }, {transaction: t});
         }
-        else if (type === 'LIST') {
-            note_contents.array.forEach(content => {
+        else if (type === NoteType.LIST) {
+            console.log(note_content)
+            note_content.forEach(content => {
                 db.NoteContent.create({     
                     body: content,
                     note_id: newNote.id
                 });
             }, {transaction: t});
         };
+        // TODO: else
+
+        newNote.note_contents = note_content;
     
         await t.commit();
+        
+        res.status(200).json({ 
+            "message": `Successfuly created new note with id ${newNote.id}!`,
+            "data": adaptNoteToDto(newNote)
+        });
+
     } catch(error) {
         await t.rollback();
         return next(new ApiError(500, error.message))
     }
-
-    newNote.note_contents = note_contents;
-
-    res.status(200).json({ 
-        "message": `Successfuly created new note with id ${newNote.id}!`,
-        "data": newNote
-    });
 };
 
 exports.update = async (req, res, next) => {
     const userId = req.session.user.id;
     const noteId = req.params.id;
-    const { name, folder_id, heading, access_policy, type, note_contents } = req.body;
+    const { name, folder_id, heading, access_policy, body } = req.body;
 
     const existingNote = await db.Note.findOne({ 
         where: {
@@ -131,35 +129,22 @@ exports.update = async (req, res, next) => {
     existingNote.folder_id = folder_id;
     existingNote.heading = heading;
     existingNote.access_policy = access_policy;
-    existingNote.type = type;
 
     const t = await db.sequelize.transaction();
 
     try {
-        db.Note.update(existingNote, {transaction: t})
+        db.Note.update(existingNote, {
+             where: { note_id: existingNote.id }, 
+             transaction: t ,
+        })
 
-        db.NoteContent.destroy({
-            where: {
-                note_id: noteId
-            },
-            truncate: true
-        }, {transaction: t}
-        )
 
-        if (type === 'TEXT') {
-            db.NoteContent.create({     
-                body: note_contents,
-                note_id: existingNote.id
-            }, {transaction: t});
+        if (existingNote.type === NoteType.TEXT) {
+            db.NoteContent.update(
+                { body: body },
+                { where: { note_id: existingNote.id }}
+            )
         }
-        else if (type === 'LIST') {
-            note_contents.array.forEach(content => {
-                db.NoteContent.create({     
-                    body: content,
-                    note_id: existingNote.id
-                });
-            }, {transaction: t});
-        };
         
         await t.commit();
     } catch(error) {
@@ -169,7 +154,7 @@ exports.update = async (req, res, next) => {
 
     res.status(200).json({ 
         "message": `Successfuly updated note with id ${existingNote.id}!`,
-        "data": existingNote
+        "data": adaptNoteToDto(existingNote)
     });
 };
 
@@ -191,6 +176,6 @@ exports.remove = async (req, res, next) => {
 
     res.status(200).json({ 
         "message": `Successfuly deleted note with id ${existingNote.id}!`,
-        "data": existingNote
+        "data": adaptNoteToDto(existingNote)
     });
 };
