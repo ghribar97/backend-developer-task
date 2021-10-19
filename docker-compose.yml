@@ -26,6 +26,6 @@ services:
             APP_DB_USER: ${APP_DB_USER}
             APP_DB_PASSWORD: ${APP_DB_PASSWORD}
         volumes:
-            - ./db/init:/docker-entrypoint-initdb.d
+            - .:/docker-entrypoint-initdb.d
         ports: 
             - '${DATABASE_PORT}:5432'

@@ -1,13 +1,13 @@
-var factory = require('../dummyFactory')
+const { createDummyNote } = require('../services/dummyFactory')
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
 
      await queryInterface.bulkInsert('notes', [
-       factory.createDummyNote(2, 1, 'TEXT'),
+       createDummyNote(2, 1, 'TEXT'),
 
-       factory.createDummyNote(3, 2, 'TEXT'),
-       factory.createDummyNote(3, 2, 'LIST')
+       createDummyNote(3, 2, 'TEXT'),
+       createDummyNote(3, 2, 'LIST')
      ], {});
   },
 

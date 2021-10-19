@@ -1,7 +1,7 @@
 const isCelebrate = require('celebrate').isCelebrateError;
 const { CommonError } = require('./commonError');
 
-function celebrateErrorHandling(err, req, res, next) {
+exports.celebrateErrorHandling = (err, req, res, next) => {
     if (isCelebrate(err)) {
         var errorString = "";
         if (err.details.get("body")) {
@@ -21,9 +21,9 @@ function celebrateErrorHandling(err, req, res, next) {
     }
     
     return next(err);
-}
+};
 
-function commonErrorHandling(err, req, res, next) {
+exports.commonErrorHandling = (err, req, res, next) => {
     if (err instanceof CommonError) {
         return res.send({
             statusCode: err.statusCode,
@@ -32,11 +32,12 @@ function commonErrorHandling(err, req, res, next) {
     }
     
     return next(err);
-}
+};
 
-
-
-module.exports = {
-    celebrateErrorHandling,
-    commonErrorHandling
-}
+exports.fatalErrorHandling = (err, req, res, next) => {
+    console.log(res.message);
+    return res.send({
+        statusCode: 500,
+        message: res.message
+    });
+};

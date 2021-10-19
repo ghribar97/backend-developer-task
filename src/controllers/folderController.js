@@ -1,8 +1,8 @@
 const db = require("../models");
-const { Op } = require("sequelize");
-const { NotFoundApiError } = require("../handlers/apiError")
 const { getQueryOptions } = require("../services/apiQueryService");
 const { adaptFolderToDto } = require("../services/adapterService");
+const { getAccessibleFolder } = require("../services/persistence/folderPersistenceService");
+
 
 exports.getAllOwned = async (req, res, next) => {
     const userId = req.session.user.id;
@@ -22,19 +22,10 @@ exports.getOwnedById = async (req, res, next) => {
     const userId = req.session.user.id;
     const folderId = req.params.id;
 
-    const accessibleFolder = await db.Folder.findOne({ 
-        include: [{
-            model: db.Note,
-            as: "notes",
-            required: false
-        }],
-        where: { 
-            [Op.and]: [{owner_id: userId}, {id: folderId}] 
-        } 
-    });
-
-    if (!accessibleFolder) {
-        return next(new NotFoundApiError(`Folder with id '${folderId}' does not exists!`));
+    try {
+        var accessibleFolder = await getAccessibleFolder(userId, folderId, true);
+    } catch (err) {
+        return next(err)
     }
 
     res.status(200).json({ 
@@ -47,10 +38,14 @@ exports.create = async (req, res, next) => {
     const userId = req.session.user.id;
     const { name } = req.body;
 
-    const newFolder = await db.Folder.create({     
-        name: name,
-        owner_id: userId
-    });
+    try {
+        var newFolder = await db.Folder.create({     
+            name: name,
+            owner_id: userId
+        });
+    } catch (err) {
+        return next(err);
+    }
 
     res.status(200).json({ 
         "message": `Successfuly created new folder with id ${newFolder.id}!`,
@@ -63,18 +58,14 @@ exports.update = async (req, res, next) => {
     const folderId = req.params.id;
     const { name } = req.body;
 
-    const existingFolder = await db.Folder.findOne({ 
-        where: { 
-            [Op.and]: [{owner_id: userId}, {id: folderId}] 
-        } 
-    });
+    try {
+        var existingFolder = await getAccessibleFolder(userId, folderId);
 
-    if (!existingFolder) {
-        return next(new NotFoundApiError(`Folder with id '${folderId}' does not exists!`));
+        existingFolder.name = name;
+        await existingFolder.save();
+    } catch (err) {
+        return next(err);
     }
-
-    existingFolder.name = name;
-    await existingFolder.save();
 
     res.status(200).json({ 
         "message": `Successfuly updated folder with id ${existingFolder.id}!`,
@@ -86,17 +77,12 @@ exports.remove = async (req, res, next) => {
     const userId = req.session.user.id;
     const folderId = req.params.id;
 
-    const existingFolder = await db.Folder.findOne({ 
-        where: { 
-            [Op.and]: [{owner_id: userId}, {id: folderId}] 
-        } 
-    });
-
-    if (!existingFolder) {
-        return next(new NotFoundApiError(`Folder with id '${folderId}' does not exists!`));
+    try {
+        var existingFolder = await getAccessibleFolder(userId, folderId);
+        await existingFolder.destroy();
+    } catch (err) {
+        return next(err);
     }
-
-    await existingFolder.destroy();
 
     res.status(200).json({ 
         "message": `Successfuly deleted folder with id ${existingFolder.id}!`,

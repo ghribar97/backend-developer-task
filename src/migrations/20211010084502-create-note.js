@@ -1,4 +1,4 @@
-const { AccessPolicy, NoteType } = require('../../src/types');
+const { AccessPolicy, NoteType } = require('../types');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {

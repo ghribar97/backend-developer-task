@@ -1,16 +1,15 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const { NotFoundApiError, ApiError } = require("../handlers/apiError");
+const { ApiError } = require("../handlers/apiError");
 const { getQueryOptions } = require("../services/apiQueryService");
 const { AccessPolicy, NoteType } = require('../types');
 const { adaptNoteToDto } = require("../services/adapterService");
+const { getAccessibleNote } = require("../services/persistence/notePersistenceService");
+const { getAccessibleFolder } = require("../services/persistence/folderPersistenceService");
 
 
 exports.getAllAccessible = async (req, res, next) => {
-    var userId = null;
-    if (req.session.user) {
-        userId = req.session.user.id;
-    }
+    var userId = req.session.user !== null ? req.session.user.id : null;
 
     const accessibleNotes = await db.Note.findAll({
         where: {
@@ -26,26 +25,13 @@ exports.getAllAccessible = async (req, res, next) => {
 };
 
 exports.getAccessibleById = async (req, res, next) => {
-    var userId = null;
-    if (req.session.user) {
-        userId = req.session.user.id;
-    }
+    var userId = req.session.user !== null ? req.session.user.id : null;
     const noteId = req.params.id;
 
-    const accessibleNote = await db.Note.findOne({
-        include: [{
-            model: db.NoteContent,
-            as: "note_contents",
-            required: false
-        }],
-        where: {
-            [Op.or]: [{access_policy: AccessPolicy.PUBLIC}, {owner_id: userId}],
-            id: noteId
-       } 
-   });
-
-    if (!accessibleNote) {
-        return next(new NotFoundApiError(`Note with id '${noteId}' does not exists!`));
+    try {
+        var accessibleNote = await getAccessibleNote(userId, noteId, true);
+    } catch (err) {
+        return next(err);
     }
 
     res.status(200).json({ 
@@ -60,11 +46,8 @@ exports.create = async (req, res, next) => {
     const t = await db.sequelize.transaction();
 
     try {
-        const newNote = await db.Note.create({     
-            owner_id: userId,
-            ...req.body
-        }, {transaction: t});
-    
+        const newNote = await db.Note.create({ owner_id: userId, ...req.body }, { transaction: t });
+
         const { type, note_content } = req.body;
         if (type === NoteType.TEXT) {
             db.NoteContent.create({     
@@ -73,7 +56,6 @@ exports.create = async (req, res, next) => {
             }, {transaction: t});
         }
         else if (type === NoteType.LIST) {
-            console.log(note_content)
             note_content.forEach(content => {
                 db.NoteContent.create({     
                     body: content,
@@ -81,7 +63,6 @@ exports.create = async (req, res, next) => {
                 });
             }, {transaction: t});
         };
-        // TODO: else
 
         newNote.note_contents = note_content;
     
@@ -103,26 +84,12 @@ exports.update = async (req, res, next) => {
     const noteId = req.params.id;
     const { name, folder_id, heading, access_policy, body } = req.body;
 
-    const existingNote = await db.Note.findOne({ 
-        where: {
-            [Op.and]: [{id: noteId}, {owner_id: userId}],
-       } 
-    });
-
-    if (!existingNote) {
-        return next(new NotFoundApiError(`Note with id '${noteId}' does not exists!`));
-    }
-
-    if (folder_id) {
-        const accessibleFolder = await db.Folder.findOne({ 
-            where: { 
-                [Op.and]: [{owner_id: userId}, {id: folder_id}] 
-            } 
-        });
-    
-        if (!accessibleFolder) {
-            return next(new NotFoundApiError(`Folder with id '${folder_id}' does not exists!`));
-        }
+    try {
+        var existingNote = await getAccessibleNote(userId, noteId);
+        // validate that the folder exists
+        await getAccessibleFolder(userId, folder_id);
+    } catch (err) {
+        return next(err);
     }
 
     existingNote.name = name;
@@ -135,15 +102,14 @@ exports.update = async (req, res, next) => {
     try {
         db.Note.update(existingNote, {
              where: { note_id: existingNote.id }, 
-             transaction: t ,
-        })
-
+             transaction: t,
+        });
 
         if (existingNote.type === NoteType.TEXT) {
             db.NoteContent.update(
                 { body: body },
                 { where: { note_id: existingNote.id }}
-            )
+            );
         }
         
         await t.commit();
@@ -162,17 +128,12 @@ exports.remove = async (req, res, next) => {
     const userId = req.session.user.id;
     const noteId = req.params.id;
 
-    const existingNote = await db.Note.findOne({ 
-        where: { 
-            [Op.and]: [{owner_id: userId}, {id: noteId}] 
-        } 
-    });
-
-    if (!existingNote) {
-        return next(new NotFoundApiError(`Note with id '${noteId}' does not exists!`));
+    try {
+        var existingNote = await getAccessibleNote(userId, noteId);
+        await existingNote.destroy();
+    } catch (err) {
+        return next(err);
     }
-
-    await existingNote.destroy();
 
     res.status(200).json({ 
         "message": `Successfuly deleted note with id ${existingNote.id}!`,

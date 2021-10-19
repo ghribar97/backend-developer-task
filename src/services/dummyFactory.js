@@ -1,23 +1,22 @@
 const faker = require('faker');
 const bcrypt = require('bcrypt');
 
-async function createDummyUser() {
+exports.createDummyUser = async () => {
     return {
         name: faker.name.findName(),
         username: faker.internet.userName(),
         password: await bcrypt.hash('12345', parseInt(process.env.CRYPTO_SALT_ROUNDS)) // same password for testing purposes
     }
-}
+};
 
-function createDummyFolder(ownerId) {
+exports.createDummyFolder = (ownerId) => {
     return {
         name: faker.lorem.words(1),
         owner_id: ownerId,
     }
-}
+};
 
-
-function createDummyNote(ownerId, folderId, type) {
+exports.createDummyNote = (ownerId, folderId, type) => {
     return {
         name: faker.system.fileName(),
         heading: faker.lorem.words(3),
@@ -26,20 +25,11 @@ function createDummyNote(ownerId, folderId, type) {
         owner_id: ownerId,
         type: type
     }
-}
+};
 
-
-function createDummyNoteContent(noteId) {
+exports.createDummyNoteContent = (noteId) => {
     return {
         body: faker.lorem.words(100),
         note_id: noteId
     }
-}
-
-
-module.exports = {
-    createDummyUser,
-    createDummyFolder,
-    createDummyNote,
-    createDummyNoteContent
-}
+};

@@ -1,13 +1,13 @@
-var factory = require('../dummyFactory')
+const { createDummyFolder } = require('../services/dummyFactory')
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
 
      await queryInterface.bulkInsert('folders', [
-       factory.createDummyFolder(2),
+       createDummyFolder(2),
 
-       factory.createDummyFolder(3),
-       factory.createDummyFolder(3),
+       createDummyFolder(3),
+       createDummyFolder(3),
      ], {});
   },
 

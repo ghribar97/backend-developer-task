@@ -15,4 +15,4 @@ exports.getQueryOptions = (query) => {
     }
 
     return { limit: limit, offset: offset, order: [[ orderBy, orderType ]] }
-}
+};

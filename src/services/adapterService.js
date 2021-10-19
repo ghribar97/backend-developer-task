@@ -16,7 +16,7 @@ exports.adaptFolderToDto = (folder) => {
     }
 
     return folderDto;
-}
+};
 
 exports.adaptNoteToDto = (note) => {
     const noteDto = {
@@ -40,4 +40,4 @@ exports.adaptNoteToDto = (note) => {
     }
 
     return noteDto;
-}
+};

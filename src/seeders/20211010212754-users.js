@@ -1,12 +1,12 @@
-var factory = require('../dummyFactory');
+const { createDummyUser } = require('../services/dummyFactory');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
 
      await queryInterface.bulkInsert('users', [
-       await factory.createDummyUser(),
-       await factory.createDummyUser(),
-       await factory.createDummyUser()
+       await createDummyUser(),
+       await createDummyUser(),
+       await createDummyUser()
      ], {});
   },
 
