@@ -27,7 +27,7 @@ describe('List note items API', () => {
         const noteId = 2;
         const cookie = await executeAuthenticatedUserLogin();
         const res = await request(app).post(`/api/v1/notes/${noteId}/noteList`).set('Cookie', cookie).send({"body": faker.lorem.words(50)});
-        expect(res.statusCode).toEqual(404);
+        expect(res.statusCode).toEqual(400);
     }),
 
     it('should not be able to add list item to inaccessible note', async () => {
@@ -74,5 +74,5 @@ describe('List note items API', () => {
         const dbNoteContent = await db.NoteContent.findOne({where: { id: contentId }});
         expect(dbNoteContent).toBe(null);
     })
-    
+
 });

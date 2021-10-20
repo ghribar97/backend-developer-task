@@ -56,7 +56,6 @@ exports.deleteListContent = async (req, res, next) => {
     const contentId = req.params.id;
 
     try {
-        var note = await getNoteForEdit(userId, noteId);
         var noteContent = await getAccessibleNoteListContent(userId, noteId, contentId);
         await noteContent.destroy();
     } catch (err) {
