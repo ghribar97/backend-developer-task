@@ -1,11 +1,8 @@
 # Setup
 
-Provide a file with instructions on how to set up and use the API:
-* dependencies
-* variables to be set
-* run configs
-* file system permissions
-* ...
+Docker compose file is provided. Before running the server, .env file must be created, where environmental variables are defined. 
+After setting it up in root directory, run the following command:
 
-### Optional
-You can provide Docker and Docker Compose files instead.
+```console
+docker-compose up --build
+```

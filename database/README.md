@@ -1,6 +1,4 @@
 # Database
 
-Provide a file for database import with prepared mock data for:
-* users
-* folders
-* notes
+Data is persisted in the database upon initialization.
+Database seeds can be find in /src/seeders

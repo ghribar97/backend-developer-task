@@ -12,6 +12,6 @@ COPY . .
 
 ENV NODE_ENV production
 
-EXPOSE 8080
+EXPOSE 4000
 
 ENTRYPOINT [ "./entrypoint.sh" ]

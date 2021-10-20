@@ -9,7 +9,6 @@ const handlers = require("./handlers/handlers")
 const cookieParser = require("cookie-parser");
 const sessions = require('express-session');
 
-//db.sequelize.sync();
 const app = express();
 
 if (process.env.NODE_ENV !== 'test') {
@@ -21,13 +20,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 var corsOptions = {
-  origin: "http://localhost:8081"
+  origin: process.env.CORS_ORIGIN
 };
 
 app.use(cors(corsOptions));
 
 app.use(sessions({
-    secret: process.env.SESSION_SECRET || 'my_secret',
+    secret: process.env.SESSION_SECRET,
     saveUninitialized: false,
     cookie: { 
       maxAge: 1000 * 60 * 60  // one hour
