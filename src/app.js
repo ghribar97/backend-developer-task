@@ -12,8 +12,11 @@ const sessions = require('express-session');
 //db.sequelize.sync();
 const app = express();
 
-// Log requests to the console.
-app.use(logger('dev'));
+if (process.env.NODE_ENV !== 'test') {
+  // Log requests to the console.
+  app.use(logger('dev'));
+};
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -35,11 +38,12 @@ app.use(sessions({
 // cookie parser middleware
 app.use(cookieParser());
 
+const apiVersion = '/api/v1'
 // routes
-app.use('/folders', folders);
-app.use("/notes", notes);
-app.use("/notes", noteListContent);
-app.use("/auth", auth);
+app.use(apiVersion + '/folders', folders);
+app.use(apiVersion + "/notes", notes);
+app.use(apiVersion + "/notes", noteListContent);
+app.use(apiVersion + "/auth", auth);
 
 // Error handlers
 app.use(handlers.celebrateErrorHandling);
@@ -48,6 +52,10 @@ app.use(handlers.fatalErrorHandling);
 
 const port = process.env.PORT;
 
-app.listen(port, () => {
-      console.log(`Now listening on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Now listening on port ${port}`);
+  });
+}
+
+module.exports = app;

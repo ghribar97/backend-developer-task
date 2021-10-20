@@ -2,13 +2,24 @@
   "name": "backend-developer-task",
   "version": "1.0.0",
   "description": "Create REST API that allows users to manage their notes.  \r Notes can be organized into folders for easier management.  \r API should allow user authentication through basic HTTP authentication (username and password).  \r The goal is to build a simple but secure and easily scalable service.",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
-    "start:dev": "nodemon ./src/app"
+    "start:dev": "nodemon ./src/app",
+    "test": "cross-env NODE_ENV=test jest --forceExit --detectOpenHandles  --watchAll",
+    "pretest": "cross-env NODE_ENV=test npm run db:reset",
+    "posttest": "cross-env NODE_ENV=test npx sequelize-cli db:drop",
+    "db:create:test": "cross-env NODE_ENV=test npx sequelize-cli db:create",
+    "db:reset": "npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ghribar97/backend-developer-task.git"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
   },
   "author": "ghribar",
   "license": "ISC",
@@ -32,7 +43,9 @@
     "sequelize": "^6.7.0"
   },
   "devDependencies": {
+    "jest": "^27.2.5",
     "nodemon": "^2.0.13",
-    "sequelize-cli": "^6.2.0"
+    "sequelize-cli": "^6.2.0",
+    "supertest": "^6.1.6"
   }
 }

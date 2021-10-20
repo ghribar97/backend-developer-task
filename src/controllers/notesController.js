@@ -4,12 +4,12 @@ const { ApiError } = require("../handlers/apiError");
 const { getQueryOptions } = require("../services/apiQueryService");
 const { AccessPolicy, NoteType } = require('../types');
 const { adaptNoteToDto } = require("../services/adapterService");
-const { getAccessibleNote } = require("../services/persistence/notePersistenceService");
+const { getAccessibleNote, getNoteForUpdate } = require("../services/persistence/notePersistenceService");
 const { getAccessibleFolder } = require("../services/persistence/folderPersistenceService");
 
 
 exports.getAllAccessible = async (req, res, next) => {
-    var userId = req.session.user !== null ? req.session.user.id : null;
+    var userId = req.session.user !== undefined ? req.session.user.id : null;
 
     const accessibleNotes = await db.Note.findAll({
         where: {
@@ -25,7 +25,7 @@ exports.getAllAccessible = async (req, res, next) => {
 };
 
 exports.getAccessibleById = async (req, res, next) => {
-    var userId = req.session.user !== null ? req.session.user.id : null;
+    var userId = req.session.user !== undefined ? req.session.user.id : null;
     const noteId = req.params.id;
 
     try {
@@ -42,29 +42,36 @@ exports.getAccessibleById = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
     const userId = req.session.user.id;
+
+    const { type, body, items, folder_id } = req.body;
     
+    try {
+        // validate that the folder exists
+        await getAccessibleFolder(userId, folder_id);
+    } catch (err) {
+        return next(err);
+    }
+
     const t = await db.sequelize.transaction();
 
     try {
         const newNote = await db.Note.create({ owner_id: userId, ...req.body }, { transaction: t });
-
-        const { type, note_content } = req.body;
         if (type === NoteType.TEXT) {
-            db.NoteContent.create({     
-                body: note_content,
+            await db.NoteContent.create({     
+                body: body,
                 note_id: newNote.id
             }, {transaction: t});
+            newNote.body = body;
         }
         else if (type === NoteType.LIST) {
-            note_content.forEach(content => {
-                db.NoteContent.create({     
-                    body: content,
+            for (i in items) {
+                await db.NoteContent.create({     
+                    body: items[i],
                     note_id: newNote.id
-                });
-            }, {transaction: t});
+                }, {transaction: t});
+            };
+            newNote.items = items;
         };
-
-        newNote.note_contents = note_content;
     
         await t.commit();
         
@@ -85,7 +92,7 @@ exports.update = async (req, res, next) => {
     const { name, folder_id, heading, access_policy, body } = req.body;
 
     try {
-        var existingNote = await getAccessibleNote(userId, noteId);
+        var existingNote = await getNoteForUpdate(userId, noteId);
         // validate that the folder exists
         await getAccessibleFolder(userId, folder_id);
     } catch (err) {
@@ -100,15 +107,15 @@ exports.update = async (req, res, next) => {
     const t = await db.sequelize.transaction();
 
     try {
-        db.Note.update(existingNote, {
-             where: { note_id: existingNote.id }, 
-             transaction: t,
-        });
+        await existingNote.save({transaction: t});
 
         if (existingNote.type === NoteType.TEXT) {
-            db.NoteContent.update(
+            await db.NoteContent.update(
                 { body: body },
-                { where: { note_id: existingNote.id }}
+                { 
+                    where: { note_id: existingNote.id },
+                    transaction: t,
+                }
             );
         }
         
@@ -129,7 +136,7 @@ exports.remove = async (req, res, next) => {
     const noteId = req.params.id;
 
     try {
-        var existingNote = await getAccessibleNote(userId, noteId);
+        var existingNote = await getNoteForUpdate(userId, noteId);
         await existingNote.destroy();
     } catch (err) {
         return next(err);

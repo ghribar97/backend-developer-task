@@ -18,7 +18,24 @@ exports.getAccessibleNote = async (userId, noteId, details) => {
 
     const accessibleNote = await db.Note.findOne(querySpec);
 
-    if (!accessibleNote) {
+    if (accessibleNote === undefined || !accessibleNote) {
+        throw new NotFoundApiError(`Note with id '${noteId}' does not exists!`);
+    }
+
+    return accessibleNote;
+};
+
+exports.getNoteForUpdate = async (userId, noteId) => {
+    var querySpec = { 
+        where: {
+            owner_id: userId,
+            id: noteId
+        }
+    };
+
+    const accessibleNote = await db.Note.findOne(querySpec);
+
+    if (accessibleNote === undefined || !accessibleNote) {
         throw new NotFoundApiError(`Note with id '${noteId}' does not exists!`);
     }
 
@@ -39,7 +56,7 @@ exports.getAccessibleNoteListContent = async (userId, noteId, contentId, details
 
     const noteContent = await db.NoteContent.findOne(querySpec);
 
-    if (!noteContent) {
+    if (noteContent === undefined || !noteContent) {
         throw new NotFoundApiError(`NoteContent with id '${contentId}' does not exists!`);
     }
     return noteContent;

@@ -14,8 +14,7 @@ exports.celebrateErrorHandling = (err, req, res, next) => {
             const { details } = errorBody;
             errorString = details[0].message;
         }
-        return res.send({
-            statusCode: 400,
+        return res.status(400).send({
             message: errorString
         });
     }
@@ -25,8 +24,7 @@ exports.celebrateErrorHandling = (err, req, res, next) => {
 
 exports.commonErrorHandling = (err, req, res, next) => {
     if (err instanceof CommonError) {
-        return res.send({
-            statusCode: err.statusCode,
+        return res.status(err.statusCode).json({
             message: err.message
         });
     }
@@ -35,9 +33,7 @@ exports.commonErrorHandling = (err, req, res, next) => {
 };
 
 exports.fatalErrorHandling = (err, req, res, next) => {
-    console.log(res.message);
-    return res.send({
-        statusCode: 500,
-        message: res.message
+    return res.status(500).json({
+        message: err.message
     });
 };

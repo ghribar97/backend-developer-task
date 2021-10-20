@@ -1,6 +1,6 @@
 exports.getQueryOptions = (query) => {
 
-    const limit = parseInt(query.limit) || 5;
+    const limit = parseInt(query.limit) || 10;
     const offset = parseInt(query.offset) || 0;
     var orderBy = query.order;
 

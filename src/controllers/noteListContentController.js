@@ -1,5 +1,7 @@
 const db = require("../models");
-const { getAccessibleNoteListContent, getAccessibleNote } = require("../services/persistence/notePersistenceService");
+const { NoteType } = require('../types');
+const { ApiError } = require("../handlers/apiError");
+const { getAccessibleNoteListContent, getNoteForUpdate } = require("../services/persistence/notePersistenceService");
 
 exports.addListContent = async (req, res, next) => {
     const userId = req.session.user.id;
@@ -8,7 +10,10 @@ exports.addListContent = async (req, res, next) => {
 
     try {
         // check that the note exits
-        await getAccessibleNote(userId, noteId);
+        const note = await getNoteForUpdate(userId, noteId);
+        if (note.type === NoteType.TEXT) {
+            throw new ApiError(400, `Can not add item to note of type ${NoteType.TEXT}`);
+        }
     } catch (err) {
         return next(err);
     }
@@ -51,6 +56,7 @@ exports.deleteListContent = async (req, res, next) => {
     const contentId = req.params.id;
 
     try {
+        var note = await getNoteForEdit(userId, noteId);
         var noteContent = await getAccessibleNoteListContent(userId, noteId, contentId);
         await noteContent.destroy();
     } catch (err) {

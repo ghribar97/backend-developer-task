@@ -38,11 +38,14 @@ router.post(
             heading: Joi.string().required(),
             type: Joi.string().valid(NoteType.TEXT, NoteType.LIST).required(),
             access_policy: Joi.string().valid(AccessPolicy.PRIVATE, AccessPolicy.PUBLIC).required(),
-            note_content: Joi.when('type', {
+            body: Joi.when('type', {
                 is: Joi.string().valid(NoteType.TEXT),
                 then: Joi.string().required(),
-                otherwise: Joi.array().items(Joi.string().required())
-            }).required()
+            }),
+            items: Joi.when('type', {
+                is: Joi.string().valid(NoteType.LIST),
+                then: Joi.array().items(Joi.string().required()).required(),
+            }),
         })
       }),
     create
